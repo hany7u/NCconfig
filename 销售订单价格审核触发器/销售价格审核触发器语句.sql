@@ -63,9 +63,9 @@ begin
       end if;/*不审核的物料结束*/
       if t_isaudit <> 'N' and :NEW.vbdef17 <>'~' and :NEW.vbdef17 > 0  then/*采购单价处填写的有值，包括OEM业务和直运业务*/
           if :NEW.ntaxprice <> :new.nprice then /*国内销售*/
-             t_diff :=  :NEW.nprice * t_unitflag - t_unitflag * :new.vbdef18 * :new.nexchangerate / :new.nnum - :new.vbdef19 - :NEW.vbdef17 * t_unitflag * 0.8547 ;
+             t_diff :=  :NEW.nprice * t_unitflag - round(t_unitflag * :new.vbdef18 * :new.nexchangerate / :new.nnum,4) - :new.vbdef19 - :NEW.vbdef17 * t_unitflag * 0.8547 ;
           elsif :NEW.ntaxprice = :new.nprice then/*出口*/
-             t_diff := :NEW.nprice * t_unitflag * (1 - t_exp_tax) - t_unitflag * :new.vbdef18 * :new.nexchangerate / :new.nnum - :new.vbdef19 - :NEW.vbdef17 * t_unitflag * 0.8547 ;
+             t_diff := :NEW.nprice * t_unitflag * (1 - t_exp_tax) - round(t_unitflag * :new.vbdef18 * :new.nexchangerate / :new.nnum,4) - :new.vbdef19 - :NEW.vbdef17 * t_unitflag * 0.8547 ;
           end if;
           if t_diff > 0 then/*售价大于采购价*/
           :NEW.vbdef16 := 'N';
@@ -81,7 +81,7 @@ begin
               if :new.vbdef6 = '~' then :new.vbdef6 := 0; end if;
               if :new.vbdef7 = '~' then :new.vbdef7 := 0; end if;
               :new.ex_factory_price := t_ex_factory_price;
-              t_diff := :new.nprice * t_unitflag * (1 - t_fbuysellflag) -  t_ex_factory_price * 0.8547 - :new.vbdef6 - :new.vbdef7 - t_unitflag * :new.vbdef18 * :new.nexchangerate / :new.nnum  - :new.vbdef19 ;
+              t_diff := :new.nprice * t_unitflag * (1 - t_fbuysellflag) -  t_ex_factory_price * 0.8547 - :new.vbdef6 - :new.vbdef7 - round(t_unitflag * :new.vbdef18 * :new.nexchangerate / :new.nnum,4)  - :new.vbdef19 ;
               
               if t_diff > 0 then /*判断价差*/
                 :NEW.vbdef16 := 'N';
@@ -102,10 +102,10 @@ begin
              select nvl((select fpb.labour_cost from fr_prodclass_burden_list fpb where fpb.producing_dept = (select orgs.name from org_orgs orgs where orgs.pk_org = :new.csendstockorgid) and fpb.product = (select pd.prodname_y from fr_product_details pd where pd.prodcode = t_code)),0) into t_labour_cost from dual;
              select nvl((select fpb.burden_a from fr_prodclass_burden_list fpb where fpb.producing_dept = (select orgs.name from org_orgs orgs where orgs.pk_org = :new.csendstockorgid) and fpb.product = (select pd.prodname_y from fr_product_details pd where pd.prodcode = t_code)),0) into t_burden_a from dual;
              if  t_isQuarter = '1001B310000000026FZB'        then 
-               t_diff         := :new.nprice * t_unitflag * (1 - t_fbuysellflag)- t_prod_cost_quarter -  c_packing_cost - c_pallet_cost - :new.vbdef6 - :new.vbdef7 - t_burden - t_unitflag * :new.vbdef18 * :new.nexchangerate / :new.nnum - :new.vbdef19 - t_profit_t * 0.8547 ;
+               t_diff         := :new.nprice * t_unitflag * (1 - t_fbuysellflag)- t_prod_cost_quarter -  c_packing_cost - c_pallet_cost - :new.vbdef6 - :new.vbdef7 - t_burden - round(t_unitflag * :new.vbdef18 * :new.nexchangerate / :new.nnum,4) - :new.vbdef19 - t_profit_t * 0.8547 ;
                :new.prodcost  := t_prod_cost_quarter; 
              elsif t_isQuarter <> '1001B310000000026FZB'   then
-               t_diff         := :new.nprice * t_unitflag * (1 - t_fbuysellflag)- t_prod_cost -  c_packing_cost - c_pallet_cost - :new.vbdef6 - :new.vbdef7 - t_burden - t_unitflag * :new.vbdef18 * :new.nexchangerate / :new.nnum - :new.vbdef19 - t_profit_t * 0.8547 ;
+               t_diff         := :new.nprice * t_unitflag * (1 - t_fbuysellflag)- t_prod_cost -  c_packing_cost - c_pallet_cost - :new.vbdef6 - :new.vbdef7 - t_burden - round(t_unitflag * :new.vbdef18 * :new.nexchangerate / :new.nnum,4) - :new.vbdef19 - t_profit_t * 0.8547 ;
                :new.prodcost  := t_prod_cost; 
              end if;
              :new.packing_cost := c_packing_cost; :new.pallet_cost := c_pallet_cost; :new.burden_cost := t_burden; :new.labour_cost := t_labour_cost; :new.deprecost := t_deprecost; :new.burden_a := t_burden_a; :new.profit_t := t_profit_t; 
