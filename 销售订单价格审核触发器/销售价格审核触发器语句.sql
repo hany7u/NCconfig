@@ -53,17 +53,17 @@ begin
             t_unitflag := 1000;
       else  t_unitflag := 1;
       end if;      
-      if  :NEW.fbuysellflag = '1' and nvl(:new.nexchangerate,0) = 1 then /*国内销售*/
+      if  :NEW.ntaxprice <> :new.nprice then /*国内销售*/
         t_fbuysellflag := 0;
-      elsif :NEW.fbuysellflag = '3' or nvl(:new.nexchangerate,1) <> 1 then /*出口销售*/
+      elsif :NEW.ntaxprice = :new.nprice then /*出口销售*/
         t_fbuysellflag := nvl(t_exp_tax,0.00);        
         t_profit_t     := to_number(nvl(t_export_profit_t,0));
       end if;      
       
       if t_isaudit <> 'N' and :NEW.vbdef17 <>'~' and :NEW.vbdef17 > 0  then/*采购单价处填写的有值，包括OEM业务和直运业务*/
-          if :NEW.fbuysellflag = '1' and nvl(:new.nexchangerate,0) = 1 then /*国内销售*/
+          if :NEW.ntaxprice <> :new.nprice then /*国内销售*/
              t_diff :=  round(:NEW.nprice * t_unitflag - t_unitflag * :new.vbdef18 * :new.nexchangerate / :new.nnum - :new.vbdef19 - :NEW.vbdef17 * t_unitflag * 0.8547,0) ;
-          elsif :NEW.fbuysellflag = '3' or nvl(:new.nexchangerate,1) <> 1 then/*出口*/
+          elsif :NEW.ntaxprice = :new.nprice then/*出口*/
              t_diff := round(:NEW.nprice * t_unitflag * (1 - t_exp_tax) - t_unitflag * :new.vbdef18 * :new.nexchangerate / :new.nnum - :new.vbdef19 - :NEW.vbdef17 * t_unitflag * 0.8547,0) ;
           end if;
           if t_diff > 0 then/*售价大于采购价*/
