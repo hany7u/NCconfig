@@ -68,11 +68,11 @@ begin
           end if;
           if t_diff > 0 then/*售价大于采购价*/
           :NEW.vbdef16 := 'N';
-          :NEW.vbdef11 := t_diff * t_unitflag;
+          :NEW.vbdef11 := t_diff ;
           end if;/*售价大于采购价结束*/
           if t_diff <= 0 then/*售价不大于采购价*/
           :NEW.vbdef16 := 'B';
-          :NEW.vbdef11 := t_diff * t_unitflag;
+          :NEW.vbdef11 := t_diff ;
           end if;/*售价不大于采购价结束*/
       end if;/*采购单价处填写的有值，包括OEM业务和直运业务结束*/         
       if t_isaudit <> 'N' and :NEW.vbdef17 = '~' then /*采购单价处未填写值，认为是一般销售业务*/
