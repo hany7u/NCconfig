@@ -44,7 +44,9 @@ begin
     select so_saleorder.vdef16                       into t_isQuarter from so_saleorder      where so_saleorder.csaleorderid = :new.csaleorderid;
       if :new.vbdef18 = '~' then :new.vbdef18 := 0; end if;
       if :new.vbdef19 = '~' then :new.vbdef19 := 0; end if;
-      
+      if t_isaudit = 'N' THEN/*不审核的物料*/
+      :NEW.vbdef16 := 'N';
+      end if;/*不审核的物料结束*/
       if :NEW.cunitid = '0001Z0100000000000XK'  then/*主单位为吨*/
             t_unitflag := 1;
       elsif :NEW.cunitid = '0001Z0100000000000XI' or  :NEW.cunitid = '1001B3100000000D26QT'  then/*主单位为千克*/
@@ -57,10 +59,7 @@ begin
         t_fbuysellflag := nvl(t_exp_tax,0.00);        
         t_profit_t     := to_number(nvl(t_export_profit_t,0));
       end if;      
-      if t_isaudit = 'N' THEN/*不审核的物料*/
-      :NEW.vbdef16 := 'N';
-      :NEW.vbdef11 :=0;
-      end if;/*不审核的物料结束*/
+      
       if t_isaudit <> 'N' and :NEW.vbdef17 <>'~' and :NEW.vbdef17 > 0  then/*采购单价处填写的有值，包括OEM业务和直运业务*/
           if :NEW.ntaxprice <> :new.nprice then /*国内销售*/
              t_diff :=  round(:NEW.nprice * t_unitflag - t_unitflag * :new.vbdef18 * :new.nexchangerate / :new.nnum - :new.vbdef19 - :NEW.vbdef17 * t_unitflag * 0.8547,0) ;
