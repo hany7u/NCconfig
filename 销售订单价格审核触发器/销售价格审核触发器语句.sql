@@ -101,10 +101,10 @@ begin
              select nvl((select fpb.depre_cost from fr_prodclass_burden_list fpb where fpb.producing_dept = (select orgs.name from org_orgs orgs where orgs.pk_org = :new.csendstockorgid) and fpb.product = (select pd.prodname_y from fr_product_details pd where pd.prodcode = t_code)),0) into t_deprecost from dual;
              select nvl((select fpb.labour_cost from fr_prodclass_burden_list fpb where fpb.producing_dept = (select orgs.name from org_orgs orgs where orgs.pk_org = :new.csendstockorgid) and fpb.product = (select pd.prodname_y from fr_product_details pd where pd.prodcode = t_code)),0) into t_labour_cost from dual;
              select nvl((select fpb.burden_a from fr_prodclass_burden_list fpb where fpb.producing_dept = (select orgs.name from org_orgs orgs where orgs.pk_org = :new.csendstockorgid) and fpb.product = (select pd.prodname_y from fr_product_details pd where pd.prodcode = t_code)),0) into t_burden_a from dual;
-             if  t_isQuarter = '1001B310000000026FZB'        then 
+             if  t_isQuarter = '1001B310000000026FZB'        then /*季度合同的订单*/
                t_diff         := :new.nprice * t_unitflag * (1 - t_fbuysellflag)- t_prod_cost_quarter -  c_packing_cost - c_pallet_cost - :new.vbdef6 - :new.vbdef7 - t_burden - round(t_unitflag * :new.vbdef18 * :new.nexchangerate / :new.nnum,4) - :new.vbdef19 - t_profit_t * 0.8547 ;
                :new.prodcost  := t_prod_cost_quarter; 
-             elsif t_isQuarter <> '1001B310000000026FZB'   then
+             elsif t_isQuarter <> '1001B310000000026FZB'   then /*不是季度合同的订单*/
                t_diff         := :new.nprice * t_unitflag * (1 - t_fbuysellflag)- t_prod_cost -  c_packing_cost - c_pallet_cost - :new.vbdef6 - :new.vbdef7 - t_burden - round(t_unitflag * :new.vbdef18 * :new.nexchangerate / :new.nnum,4) - :new.vbdef19 - t_profit_t * 0.8547 ;
                :new.prodcost  := t_prod_cost; 
              end if;
