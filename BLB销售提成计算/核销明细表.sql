@@ -1,4 +1,4 @@
-select t.pk_verifydetail 核销明细表主键,saleout_b.cgeneralbid 出库单主键, orgs.name 公司, substr(t.busidate,1,10) 处理日期 ,h.billno 应收单号,t.billno2 收款单号,bd_balatype.name 结算方式,t.scomment 摘要,t.busiflag 处理标志,t.redflag 红冲标志,sfst.name 是否售桶,       
+select t.pk_verifydetail 核销明细表主键,saleout_b.cgeneralbid 出库单主键, orgs.name 公司,dept.name 销售部门, substr(t.busidate,1,10) 处理日期 ,h.billno 应收单号,t.billno2 收款单号,bd_balatype.name 结算方式,t.scomment 摘要,t.busiflag 处理标志,t.redflag 红冲标志,sfst.name 是否售桶,       
        costorg.name 成本域,case costorg.name when '保龄宝生物股份有限公司本部' then '自产' when '国际业务部成本域' then 'OEM' when '三库同建成本域' then 'OEM' end  是否OEM,so_org.name 销售组织,cust_class.name 客户基本分类,cust.code 客户编码,cust.name 客户名称,
        pd.prodcode 物料编码,pd.prodname 物料名称,pd.spec 规格型号,pd.prodclass_y 产品类型,pd.prodname_y 产品名称,
        case  when b.money_de <> b.notax_de then 0 when b.money_de = b.notax_de then  pd.exp_tax end 不予免征税率,
@@ -19,6 +19,7 @@ select t.pk_verifydetail 核销明细表主键,saleout_b.cgeneralbid 出库单�
        saleorder_b.vbdef19 港杂空运本币吨运费,
        decode(h.src_syscode,0,'应收系统',3,'销售系统',16,'内部交易',19,'库存系统',h.src_syscode) 单据来源系统
 from arap_verifydetail t --核销明细表
+left join org_dept dept on t.pk_deptid = dept.pk_dept--销售部门
 left join org_orgs orgs on t.pk_org = orgs.pk_org --财务组织
 left join ar_recbill h on t.pk_bill = h.pk_recbill --应收单主表
 left join ar_recitem b on t.pk_item = b.pk_recitem --应收单子表
@@ -46,7 +47,7 @@ where substr(t.busidate,1,10)>='${sdate}' and substr(t.busidate,1,10)<='${edate}
       and saleorder_b.dr=0
       
 union all
-select t.pk_verifydetail 核销明细表主键,saleout_b.cgeneralbid 出库单主键, orgs.name 公司, substr(t.busidate,1,10) 处理日期 ,h.billno 应收单号,t.billno2 收款单号,bd_balatype.name 结算方式,t.scomment 摘要,t.busiflag 处理标志,t.redflag 红冲标志,sfst.name 是否售桶,       
+select t.pk_verifydetail 核销明细表主键,saleout_b.cgeneralbid 出库单主键, orgs.name 公司,dept.name 销售部门, substr(t.busidate,1,10) 处理日期 ,h.billno 应收单号,t.billno2 收款单号,bd_balatype.name 结算方式,t.scomment 摘要,t.busiflag 处理标志,t.redflag 红冲标志,sfst.name 是否售桶,       
        costorg.name 成本域,case costorg.name when '保龄宝生物股份有限公司本部' then '自产' when '国际业务部成本域' then 'OEM' when '三库同建成本域' then 'OEM' end  是否OEM,so_org.name 销售组织,cust_class.name 客户基本分类,cust.code 客户编码,cust.name 客户名称,
        pd.prodcode 物料编码,pd.prodname 物料名称,pd.spec 规格型号,pd.prodclass_y 产品类型,pd.prodname_y 产品名称,
        case  when b.money_de <> b.notax_de then 0 when b.money_de = b.notax_de then  pd.exp_tax end 不予免征税率,
@@ -67,6 +68,7 @@ select t.pk_verifydetail 核销明细表主键,saleout_b.cgeneralbid 出库单�
        saleorder_b.vbdef19 港杂空运本币吨运费,
        decode(h.src_syscode,0,'应收系统',3,'销售系统',16,'内部交易',19,'库存系统',h.src_syscode) 单据来源系统
 from arap_verifydetail t --核销明细表
+left join org_dept dept on t.pk_deptid = dept.pk_dept--销售部门
 left join org_orgs orgs on t.pk_org = orgs.pk_org --财务组织
 left join ar_recbill h on t.pk_bill = h.pk_recbill --应收单主表
 left join ar_recitem b on t.pk_item = b.pk_recitem --应收单子表
