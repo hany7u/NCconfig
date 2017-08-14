@@ -95,7 +95,7 @@ begin
              if :new.vbdef6 = '~' then :new.vbdef6 := 0; end if;
              if :new.vbdef7 = '~' then :new.vbdef7 := 0; end if;
              
-             select case  when t_sfst = '1001B3100000000573ZA' or t_sfst = '1001B31000000005A084' then t_packing_cost when t_sfst = '1001B3100000000573ZD' then t_turnover_cost else 0 end into c_packing_cost from dual;
+             select case  when t_sfst = '1001B3100000000573ZA' or t_sfst = '1001B31000000005A084' then t_packing_cost when t_sfst = '1001B3100000000573ZD'or t_sfst = '1001B3100000000KXJLJ' then t_turnover_cost else 0 end into c_packing_cost from dual;
              select case  when t_sftp = '1001B3100000000GXK98' or t_sftp = '1001B3100000000HJC28' then 185.3 when t_sftp = '1001B3100000000GXK99' or t_sftp = '1001B3100000000HJC2A' then 37.06 when t_sftp = '1001B3100000000HJC26' then 66.77 when t_sftp = '1001B3100000000HJC29' then 13.9 else 0 end into c_pallet_cost from dual;
              select nvl((select fpb.burden_all  from fr_prodclass_burden_list fpb where fpb.producing_dept = (select orgs.name from org_orgs orgs where orgs.pk_org = :new.csendstockorgid) and fpb.product = (select pd.prodname_y from fr_product_details pd where pd.prodcode = t_code)),0) into t_burden from dual;
              select nvl((select fpb.depre_cost from fr_prodclass_burden_list fpb where fpb.producing_dept = (select orgs.name from org_orgs orgs where orgs.pk_org = :new.csendstockorgid) and fpb.product = (select pd.prodname_y from fr_product_details pd where pd.prodcode = t_code)),0) into t_deprecost from dual;
@@ -126,4 +126,3 @@ begin
       end if;/*采购单价处未填写值，认为是一般销售业务结束*/
   end if;--筛选销售组织结束
 end;
-
