@@ -1,0 +1,1760 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20151125" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="ds1核销数据" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="sdate"/>
+<O t="Date">
+<![CDATA[1496246400000]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="edate"/>
+<O t="Date">
+<![CDATA[1498752000000]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ecomtest]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select t.pk_verifydetail 核销明细表主键,saleout_b.cgeneralbid 出库单主键,saleout_b.dbizdate 出库日期, orgs.name 公司,dept.name 销售部门, substr(t.busidate,1,10) 处理日期 ,h.billno 应收单号,t.billno2 收款单号,bd_balatype.name 结算方式,t.scomment 摘要,t.busiflag 处理标志,t.redflag 红冲标志,sfst.name 是否售桶,       
+       costorg.name 成本域,case costorg.name when '保龄宝生物股份有限公司本部' then '自产' when '国际业务部成本域' then 'OEM' when '三库同建成本域' then 'OEM' end  是否OEM,so_org.name 销售组织,cust_class.name 客户基本分类,cust.code 客户编码,cust.name 客户名称,
+       pd.prodcode 物料编码,pd.prodname 物料名称,pd.spec 规格型号,pd.prodclass_y 产品类型,pd.prodname_y 产品名称,
+       case  when b.money_de <> b.notax_de then 0 when b.money_de = b.notax_de then  pd.exp_tax end 不予免征税率,
+       saleorder_b.packing_cost 包装成本,saleorder_b.pallet_cost 托盘成本,
+       b.local_money_de 借方本币金额,
+       case  when invoice_b.cunitid = '0001Z0100000000000XI' or invoice_b.cunitid = '1001B3100000000D26QT' then b.quantity_de / 1000 
+       when invoice_b.cunitid = '0001Z0100000000000XK'  then  b.quantity_de   else      0
+       end        借方数量,
+       t.local_money_de 借方处理本币金额, 
+       case  when invoice_b.cunitid = '0001Z0100000000000XI' or invoice_b.cunitid = '1001B3100000000D26QT' then t.quantity_de / 1000 
+       when invoice_b.cunitid = '0001Z0100000000000XK'  then  t.quantity_de   else      0
+       end 借方处理数量,
+       case  when saleorder_b.cunitid = '0001Z0100000000000XI' or saleorder_b.cunitid = '1001B3100000000D26QT' then decode(saleorder_b.vbdef17,'~',0,saleorder_b.vbdef17) * 1000 
+       when saleorder_b.cunitid = '0001Z0100000000000XK'  then  decode(saleorder_b.vbdef17,'~',0,saleorder_b.vbdef17)   else      0
+       end  主本币含税采购单价,
+       b.rate 汇率,
+       saleorder_b.vbdef18 海运费原币金额,
+       saleorder_b.vbdef19 港杂空运本币吨运费,
+       decode(h.src_syscode,0,'应收系统',3,'销售系统',16,'内部交易',19,'库存系统',h.src_syscode) 单据来源系统
+from arap_verifydetail t --核销明细表
+left join org_dept dept on t.pk_deptid = dept.pk_dept--销售部门
+left join org_orgs orgs on t.pk_org = orgs.pk_org --财务组织
+left join ar_recbill h on t.pk_bill = h.pk_recbill --应收单主表
+left join ar_recitem b on t.pk_item = b.pk_recitem --应收单子表
+left join ar_gatheritem ar_gatheritem on t.pk_item2 = ar_gatheritem.pk_gatheritem --收款单行
+left join bd_balatype bd_balatype on ar_gatheritem.pk_balatype = bd_balatype.pk_balatype --结算方式
+left join bd_material m on t.material= m.pk_material --物料
+left join bd_marbasclass clazz on m.pk_marbasclass = clazz.pk_marbasclass --物料基本分类
+left join bd_customer cust on t.customer = cust.pk_customer --客户
+left join bd_custclass cust_class on cust.pk_custclass = cust_class.pk_custclass --客户基本分类
+left join org_orgs so_org on b.so_org = so_org.pk_org --销售组织
+left join fr_product_details pd on m.code = pd.prodcode --产品成本信息明细
+left join so_squareinv_d djs on b.top_itemid = djs.csalesquaredid --销售发票待结算明细
+left join so_squareinv_b so_squareinv_b on djs.csalesquarebid = so_squareinv_b.csalesquarebid --销售发票待结算单子实体
+left join org_orgs costorg on so_squareinv_b.ccostorgid = costorg.pk_org --成本域
+left join so_saleinvoice_b invoice_b on djs.csquarebillbid = invoice_b.csaleinvoicebid --销售发票子表
+left join ic_saleout_b saleout_b on invoice_b.csrcbid = saleout_b.cgeneralbid --销售出库单子表
+left join ic_saleout_h saleout_h on saleout_b.cgeneralhid = saleout_h.cgeneralhid --销售出库单表头
+left join bd_defdoc sfst on saleout_h.vdef1 = sfst.pk_defdoc --是否售桶自定义项
+left join so_delivery_b so_delivery_b on saleout_b.csourcebillbid = so_delivery_b.cdeliverybid --发货单子表
+left join so_saleorder_b saleorder_b on so_delivery_b.csrcbid = saleorder_b.csaleorderbid --销售订单子表
+where substr(t.busidate,1,10)>='${sdate}' and substr(t.busidate,1,10)<='${edate}' and t.billclass = 'ys' and t.dr = 0 and t.busiflag <> 2 and h.src_syscode <> 0
+      and substr(clazz.code,1,2)<>'12' and h.src_syscode = '3'--来源于销售系统
+      and substr(saleout_b.dbizdate,1,10) >= '2017-06-01'
+      and orgs.name = '保龄宝生物股份有限公司本部'
+      and saleorder_b.dr=0
+      
+union all
+select t.pk_verifydetail 核销明细表主键,saleout_b.cgeneralbid 出库单主键,saleout_b.dbizdate 出库日期, orgs.name 公司,dept.name 销售部门, substr(t.busidate,1,10) 处理日期 ,h.billno 应收单号,t.billno2 收款单号,bd_balatype.name 结算方式,t.scomment 摘要,t.busiflag 处理标志,t.redflag 红冲标志,sfst.name 是否售桶,       
+       costorg.name 成本域,case costorg.name when '保龄宝生物股份有限公司本部' then '自产' when '国际业务部成本域' then 'OEM' when '三库同建成本域' then 'OEM' end  是否OEM,so_org.name 销售组织,cust_class.name 客户基本分类,cust.code 客户编码,cust.name 客户名称,
+       pd.prodcode 物料编码,pd.prodname 物料名称,pd.spec 规格型号,pd.prodclass_y 产品类型,pd.prodname_y 产品名称,
+       case  when b.money_de <> b.notax_de then 0 when b.money_de = b.notax_de then  pd.exp_tax end 不予免征税率,
+       saleorder_b.packing_cost 包装成本,saleorder_b.pallet_cost 托盘成本,
+       b.local_money_de 借方本币金额,
+       case  when invoice_b.cunitid = '0001Z0100000000000XI' or invoice_b.cunitid = '1001B3100000000D26QT' then b.quantity_de / 1000 
+       when invoice_b.cunitid = '0001Z0100000000000XK'  then  b.quantity_de   else      0
+       end        借方数量,
+       t.local_money_de 借方处理本币金额, 
+       case  when invoice_b.cunitid = '0001Z0100000000000XI' or invoice_b.cunitid = '1001B3100000000D26QT' then t.quantity_de / 1000 
+       when invoice_b.cunitid = '0001Z0100000000000XK'  then  t.quantity_de   else      0
+       end 借方处理数量,
+       case  when saleorder_b.cunitid = '0001Z0100000000000XI' or saleorder_b.cunitid = '1001B3100000000D26QT' then decode(saleorder_b.vbdef17,'~',0,saleorder_b.vbdef17) * 1000 
+       when saleorder_b.cunitid = '0001Z0100000000000XK'  then  decode(saleorder_b.vbdef17,'~',0,saleorder_b.vbdef17)  else      0
+       end  主本币含税采购单价,
+       b.rate 汇率,
+       saleorder_b.vbdef18 海运费原币金额,
+       saleorder_b.vbdef19 港杂空运本币吨运费,
+       decode(h.src_syscode,0,'应收系统',3,'销售系统',16,'内部交易',19,'库存系统',h.src_syscode) 单据来源系统
+from arap_verifydetail t --核销明细表
+left join org_dept dept on t.pk_deptid = dept.pk_dept--销售部门
+left join org_orgs orgs on t.pk_org = orgs.pk_org --财务组织
+left join ar_recbill h on t.pk_bill = h.pk_recbill --应收单主表
+left join ar_recitem b on t.pk_item = b.pk_recitem --应收单子表
+left join ar_gatheritem ar_gatheritem on t.pk_item2 = ar_gatheritem.pk_gatheritem --收款单行
+left join bd_balatype bd_balatype on ar_gatheritem.pk_balatype = bd_balatype.pk_balatype --结算方式
+left join bd_material m on t.material= m.pk_material --物料
+left join bd_marbasclass clazz on m.pk_marbasclass = clazz.pk_marbasclass --物料基本分类
+left join bd_customer cust on t.customer = cust.pk_customer --客户
+left join bd_custclass cust_class on cust.pk_custclass = cust_class.pk_custclass --客户基本分类
+left join org_orgs so_org on b.so_org = so_org.pk_org --销售组织
+left join fr_product_details pd on m.code = pd.prodcode --产品成本信息明细
+left join so_squareinv_d djs on b.top_itemid = djs.csalesquaredid --销售发票待结算明细
+left join so_squareinv_b so_squareinv_b on djs.csalesquarebid = so_squareinv_b.csalesquarebid --销售发票待结算单子实体
+left join org_orgs costorg on so_squareinv_b.ccostorgid = costorg.pk_org --成本域
+left join so_saleinvoice_b invoice_b on djs.csquarebillbid = invoice_b.csaleinvoicebid --销售发票子表
+left join ic_saleout_b saleout_b on invoice_b.csrcbid = saleout_b.cgeneralbid --销售出库单子表
+left join ic_saleout_h saleout_h on saleout_b.cgeneralhid = saleout_h.cgeneralhid --销售出库单表头
+left join bd_defdoc sfst on saleout_h.vdef1 = sfst.pk_defdoc --是否售桶自定义项
+--left join so_delivery_b so_delivery_b on saleout_b.csourcebillbid = so_delivery_b.cdeliverybid 
+left join so_saleorder_b saleorder_b on saleout_b.csourcebillbid = saleorder_b.csaleorderbid --销售订单子表
+where substr(t.busidate,1,10)>='${sdate}' and substr(t.busidate,1,10)<='${edate}' and t.billclass = 'ys' and t.dr = 0 and t.busiflag <> 2 and h.src_syscode <> 0
+      and substr(clazz.code,1,2)<>'12' and h.src_syscode = '3'--来源于销售系统
+      and substr(saleout_b.dbizdate,1,10) >= '2017-06-01'
+      and orgs.name = '保龄宝生物股份有限公司本部'
+      and saleorder_b.dr=0
+      ]]></Query>
+</TableData>
+<TableData name="ds2直接运费" class="com.fr.data.impl.DBTableData">
+<Parameters/>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ecomtest]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select b.cgeneralbid zj,b.nnum cksl,dm_b.nnum yssl,dm_b.vbdef17 yfje,round(case when b.nnum<dm_b.nnum then dm_b.vbdef17*b.nnum/dm_b.nnum else dm_b.vbdef17*1.00 end,4) ftyfje from ic_saleout_b b
+left join ic_saleout_h h on b.cgeneralhid=h.cgeneralhid
+left join so_delivery_b so_d_b on b.csourcebillbid=so_d_b.cdeliverybid
+left join dm_delivbill_b dm_b on so_d_b.cdeliverybid=dm_b.csrcbid
+where  b.dr=0 and h.dr=0 and so_d_b.dr=0 and dm_b.dr=0 and b.nnum>0 
+       
+union all
+select  b.cgeneralbid zj,b.nnum cksl,dm_b.nnum yssl,dm_b.vbdef17 yfje,case when b.nnum<dm_b.nnum then dm_b.vbdef17*b.nnum/dm_b.nnum else dm_b.vbdef17*1.00 end ftyfje from ic_saleout_b b
+left join ic_saleout_h h on b.cgeneralhid=h.cgeneralhid
+left join dm_delivbill_b dm_b on b.cgeneralbid=dm_b.csrcbid
+where  b.dr=0 and h.dr=0 and dm_b.dr=0 and b.nnum>0 
+]]></Query>
+</TableData>
+<TableData name="ds3_1当期有核销的客户的回桶运费" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="sdate"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="edate"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ecomtest]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT distinct cust.code, sum(to_number(b.vbdef17)) over(partition by cust.code)  hzyfje,sum(to_number(b.vbdef17)) over() total_yf
+FROM dm_delivbill_b b
+left JOIN dm_delivbill h    ON b.cdelivbill_hid = h.cdelivbill_hid
+LEFT JOIN bd_material m     ON b.cinventoryvid = m.pk_material
+left join bd_customer cust on b.casscustid=cust.pk_customer
+WHERE h.dr = 0  AND b.dr = 0  AND m.name = '塑料桶' 
+	and cust.code  in (select distinct cust.code 客户编码
+from arap_verifydetail t --核销明细表
+left join org_orgs orgs on t.pk_org = orgs.pk_org --财务组织
+left join ar_recbill h on t.pk_bill = h.pk_recbill --应收单主表
+left join ar_recitem b on t.pk_item = b.pk_recitem --应收单字表
+left join bd_material m on t.material= m.pk_material --物料
+left join bd_marbasclass clazz on m.pk_marbasclass = clazz.pk_marbasclass --物料基本分类
+left join bd_customer cust on t.customer = cust.pk_customer --客户
+left join bd_custclass cust_class on cust.pk_custclass = cust_class.pk_custclass --客户基本分类
+left join org_orgs so_org on b.so_org = so_org.pk_org --销售组织
+left join so_squareinv_d djs on b.top_itemid = djs.csalesquaredid --销售发票待结算明细
+left join so_saleinvoice_b invoice_b on djs.csquarebillbid = invoice_b.csaleinvoicebid --销售发票子表
+left join ic_saleout_b saleout_b on invoice_b.csrcbid = saleout_b.cgeneralbid --销售出库单子表
+left join ic_saleout_h saleout_h on saleout_b.cgeneralhid = saleout_h.cgeneralhid --销售出库单表头
+left join bd_defdoc sfst on saleout_h.vdef1 = sfst.pk_defdoc --是否售桶自定义项
+
+where substr(t.busidate,1,10)>='${sdate}' and substr(t.busidate,1,10)<='${edate}' and t.billclass = 'ys' and t.dr = 0 and t.busiflag <> 2 and h.src_syscode <> 0
+      and substr(clazz.code,1,2)<>'12' and h.src_syscode = '3'--来源于销售系统
+      and substr(saleout_b.dbizdate,1,10) >= '2017-06-01'
+      and orgs.name = '保龄宝生物股份有限公司本部'
+      and b.dr=0)
+    and substr(h.dbilldate, 1, 10)>='${sdate}' and substr(h.dbilldate, 1, 10)<='${edate}']]></Query>
+</TableData>
+<TableData name="ds3_99当期核销客户清单" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="sdate"/>
+<O t="Date">
+<![CDATA[1496246400000]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="edate"/>
+<O t="Date">
+<![CDATA[1498752000000]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ecomtest]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select distinct cust.code 客户编码,cust.name 客户名称
+from arap_verifydetail t --核销明细表
+left join org_orgs orgs on t.pk_org = orgs.pk_org --财务组织
+left join ar_recbill h on t.pk_bill = h.pk_recbill --应收单主表
+left join ar_recitem b on t.pk_item = b.pk_recitem --应收单字表
+left join bd_material m on t.material= m.pk_material --物料
+left join bd_marbasclass clazz on m.pk_marbasclass = clazz.pk_marbasclass --物料基本分类
+left join bd_customer cust on t.customer = cust.pk_customer --客户
+left join bd_custclass cust_class on cust.pk_custclass = cust_class.pk_custclass --客户基本分类
+left join org_orgs so_org on b.so_org = so_org.pk_org --销售组织
+left join so_squareinv_d djs on b.top_itemid = djs.csalesquaredid --销售发票待结算明细
+left join so_saleinvoice_b invoice_b on djs.csquarebillbid = invoice_b.csaleinvoicebid --销售发票子表
+left join ic_saleout_b saleout_b on invoice_b.csrcbid = saleout_b.cgeneralbid --销售出库单子表
+left join ic_saleout_h saleout_h on saleout_b.cgeneralhid = saleout_h.cgeneralhid --销售出库单表头
+left join bd_defdoc sfst on saleout_h.vdef1 = sfst.pk_defdoc --是否售桶自定义项
+
+where substr(t.busidate,1,10)>='${sdate}' and substr(t.busidate,1,10)<='${edate}' and t.billclass = 'ys' and t.dr = 0 and t.busiflag <> 2 and h.src_syscode <> 0
+      and substr(clazz.code,1,2)<>'12' and h.src_syscode = '3'--来源于销售系统
+      and substr(saleout_b.dbizdate,1,10) >= '2017-06-01'
+      and orgs.name = '保龄宝生物股份有限公司本部'
+      and b.dr=0
+]]></Query>
+</TableData>
+<TableData name="ds3_2当期无核销的客户的回桶运费" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="sdate"/>
+<O>
+<![CDATA[2017-07-01]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="edate"/>
+<O>
+<![CDATA[2017-07-31]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ecomtest]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT distinct  sum(to_number(b.vbdef17)) over() total_yf
+FROM dm_delivbill_b b
+left JOIN dm_delivbill h    ON b.cdelivbill_hid = h.cdelivbill_hid
+LEFT JOIN bd_material m     ON b.cinventoryvid = m.pk_material
+left join bd_customer cust on b.casscustid=cust.pk_customer
+WHERE h.dr = 0  AND b.dr = 0  AND m.name = '塑料桶' 
+	and cust.code not in (select distinct cust.code 客户编码
+from arap_verifydetail t --核销明细表
+left join org_orgs orgs on t.pk_org = orgs.pk_org --财务组织
+left join ar_recbill h on t.pk_bill = h.pk_recbill --应收单主表
+left join ar_recitem b on t.pk_item = b.pk_recitem --应收单字表
+left join bd_material m on t.material= m.pk_material --物料
+left join bd_marbasclass clazz on m.pk_marbasclass = clazz.pk_marbasclass --物料基本分类
+left join bd_customer cust on t.customer = cust.pk_customer --客户
+left join bd_custclass cust_class on cust.pk_custclass = cust_class.pk_custclass --客户基本分类
+left join org_orgs so_org on b.so_org = so_org.pk_org --销售组织
+left join so_squareinv_d djs on b.top_itemid = djs.csalesquaredid --销售发票待结算明细
+left join so_saleinvoice_b invoice_b on djs.csquarebillbid = invoice_b.csaleinvoicebid --销售发票子表
+left join ic_saleout_b saleout_b on invoice_b.csrcbid = saleout_b.cgeneralbid --销售出库单子表
+left join ic_saleout_h saleout_h on saleout_b.cgeneralhid = saleout_h.cgeneralhid --销售出库单表头
+left join bd_defdoc sfst on saleout_h.vdef1 = sfst.pk_defdoc --是否售桶自定义项
+
+where substr(t.busidate,1,10)>='${sdate}' and substr(t.busidate,1,10)<='${edate}' and t.billclass = 'ys' and t.dr = 0 and t.busiflag <> 2 and h.src_syscode <> 0
+      and substr(clazz.code,1,2)<>'12' and h.src_syscode = '3'--来源于销售系统
+      and substr(saleout_b.dbizdate,1,10) >= '2017-06-01'
+      and orgs.name = '保龄宝生物股份有限公司本部'
+      and b.dr=0)
+	and substr(h.dbilldate, 1, 10)>='${sdate}' and substr(h.dbilldate, 1, 10)<='${edate}'
+]]></Query>
+</TableData>
+<TableData name="ds4调拨运费" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="sdate"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="edate"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ecomtest]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT '直销食品配料华南区' 销售部门,prod.prodname_y 产品名称,prod.prodclass_y 产品类别,m.code 物料编码,m.name 物料名称,m.materialspec 规格,to_number(b.vbdef17) 运费金额,
+       b.cdelivbill_bid cdelivbill_bid,
+       substr(h.dbilldate, 1, 10) dbilldate
+  FROM dm_delivbill h
+ INNER JOIN dm_delivbill_b b    ON h.cdelivbill_hid = b.cdelivbill_hid
+  LEFT JOIN bd_billtype meta    ON b.vsrctype = meta.pk_billtypeid
+  LEFT JOIN bd_stordoc stordoc    ON b.creceivestoreid = stordoc.pk_stordoc
+  left join bd_material m on b.cinventoryid=m.pk_material
+  left join fr_product_details prod on m.code=prod.prodcode
+  left join bd_customer cust on b.casscustid = cust.pk_customer
+ WHERE h.dr = 0
+   AND b.dr = 0
+   AND meta.billtypename = '库存调拨出库单'
+   AND stordoc.name = '华南办事处仓库'
+   and substr(h.dbilldate,1,10)>='${sdate}' and substr(h.dbilldate,1,10)<='${edate}'
+union
+SELECT '直销食品配料华北区' 销售部门,prod.prodname_y 产品名称,prod.prodclass_y 产品类别,m.code 物料编码,m.name 物料名称,m.materialspec 规格,to_number(b.vbdef17) 运费金额,
+       b.cdelivbill_bid cdelivbill_bid,
+       substr(h.dbilldate, 1, 10) dbilldate
+  FROM dm_delivbill h
+ INNER JOIN dm_delivbill_b b    ON h.cdelivbill_hid = b.cdelivbill_hid
+  LEFT JOIN bd_billtype meta    ON b.vsrctype = meta.pk_billtypeid
+  LEFT JOIN bd_stordoc stordoc    ON b.creceivestoreid = stordoc.pk_stordoc
+  left join bd_material m on b.cinventoryid=m.pk_material
+  left join fr_product_details prod on m.code=prod.prodcode
+  left join bd_customer cust on b.casscustid = cust.pk_customer
+ WHERE h.dr = 0
+   AND b.dr = 0
+   AND meta.billtypename = '库存调拨出库单'
+   AND stordoc.name = '东北办事处仓库'
+   and substr(h.dbilldate,1,10)>='${sdate}' and substr(h.dbilldate,1,10)<='${edate}'
+]]></Query>
+</TableData>
+<TableData name="ds5_1分摊到客户的退货运费" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="sdate"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="edate"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ecomtest]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT distinct cust.code, sum(to_number(b.vbdef17)) over(partition by cust.code)  hzyfje,sum(to_number(b.vbdef17)) over() total_yf
+FROM dm_delivbill_b b
+left JOIN dm_delivbill h    ON b.cdelivbill_hid = h.cdelivbill_hid
+LEFT JOIN bd_material m     ON b.cinventoryvid = m.pk_material
+left join bd_customer cust on b.casscustid=cust.pk_customer
+LEFT JOIN bd_billtype meta    ON b.vsrctype = meta.pk_billtypeid
+WHERE h.dr = 0  AND b.dr = 0 AND meta.billtypename IS NULL  AND m.name <> '塑料桶' 
+	and cust.code  in (select distinct cust.code 客户编码
+from arap_verifydetail t --核销明细表
+left join org_orgs orgs on t.pk_org = orgs.pk_org --财务组织
+left join ar_recbill h on t.pk_bill = h.pk_recbill --应收单主表
+left join ar_recitem b on t.pk_item = b.pk_recitem --应收单字表
+left join bd_material m on t.material= m.pk_material --物料
+left join bd_marbasclass clazz on m.pk_marbasclass = clazz.pk_marbasclass --物料基本分类
+left join bd_customer cust on t.customer = cust.pk_customer --客户
+left join bd_custclass cust_class on cust.pk_custclass = cust_class.pk_custclass --客户基本分类
+left join org_orgs so_org on b.so_org = so_org.pk_org --销售组织
+left join so_squareinv_d djs on b.top_itemid = djs.csalesquaredid --销售发票待结算明细
+left join so_saleinvoice_b invoice_b on djs.csquarebillbid = invoice_b.csaleinvoicebid --销售发票子表
+left join ic_saleout_b saleout_b on invoice_b.csrcbid = saleout_b.cgeneralbid --销售出库单子表
+left join ic_saleout_h saleout_h on saleout_b.cgeneralhid = saleout_h.cgeneralhid --销售出库单表头
+left join bd_defdoc sfst on saleout_h.vdef1 = sfst.pk_defdoc --是否售桶自定义项
+
+where substr(t.busidate,1,10)>='${sdate}' and substr(t.busidate,1,10)<='${edate}' and t.billclass = 'ys' and t.dr = 0 and t.busiflag <> 2 and h.src_syscode <> 0
+      and substr(clazz.code,1,2)<>'12' and h.src_syscode = '3'--来源于销售系统
+      and substr(saleout_b.dbizdate,1,10) >= '2017-06-01'
+      and orgs.name = '保龄宝生物股份有限公司本部'
+      and b.dr=0)
+	and substr(h.dbilldate, 1, 10)>='${sdate}' and substr(h.dbilldate, 1, 10)<='${edate}'
+]]></Query>
+</TableData>
+<TableData name="ds5_2分摊到部门的退货运费" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="sdate"/>
+<O t="Date">
+<![CDATA[1498838400000]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="edate"/>
+<O t="Date">
+<![CDATA[1501430400000]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ecomtest]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT distinct  dept.name 部门, sum(to_number(b.vbdef17)) over(partition by dept.name)  hzyfje,sum(to_number(b.vbdef17)) over() total_yf
+FROM dm_delivbill_b b
+left JOIN dm_delivbill h    ON b.cdelivbill_hid = h.cdelivbill_hid
+LEFT JOIN bd_material m     ON b.cinventoryvid = m.pk_material
+left join bd_customer cust on b.casscustid=cust.pk_customer
+left join bd_custclass custclass on cust.pk_custclass = custclass.pk_custclass
+LEFT JOIN bd_billtype meta    ON b.vsrctype = meta.pk_billtypeid
+left join org_dept dept on b.vbdef20 = dept.pk_dept
+WHERE h.dr = 0  AND b.dr = 0 AND meta.billtypename IS NULL  AND m.name <> '塑料桶' 
+  and cust.code not in (select distinct cust.code 客户编码
+from arap_verifydetail t --核销明细表
+left join org_dept dept on t.pk_deptid = dept.pk_dept--销售部门
+left join org_orgs orgs on t.pk_org = orgs.pk_org --财务组织
+left join ar_recbill h on t.pk_bill = h.pk_recbill --应收单主表
+left join ar_recitem b on t.pk_item = b.pk_recitem --应收单字表
+left join bd_material m on t.material= m.pk_material --物料
+left join bd_marbasclass clazz on m.pk_marbasclass = clazz.pk_marbasclass --物料基本分类
+left join bd_customer cust on t.customer = cust.pk_customer --客户
+left join bd_custclass cust_class on cust.pk_custclass = cust_class.pk_custclass --客户基本分类
+left join org_orgs so_org on b.so_org = so_org.pk_org --销售组织
+left join so_squareinv_d djs on b.top_itemid = djs.csalesquaredid --销售发票待结算明细
+left join so_saleinvoice_b invoice_b on djs.csquarebillbid = invoice_b.csaleinvoicebid --销售发票子表
+left join ic_saleout_b saleout_b on invoice_b.csrcbid = saleout_b.cgeneralbid --销售出库单子表
+left join ic_saleout_h saleout_h on saleout_b.cgeneralhid = saleout_h.cgeneralhid --销售出库单表头
+left join bd_defdoc sfst on saleout_h.vdef1 = sfst.pk_defdoc --是否售桶自定义项
+
+where substr(t.busidate,1,10)>='${sdate}' and substr(t.busidate,1,10)<='${edate}' and t.billclass = 'ys' and t.dr = 0 and t.busiflag <> 2 and h.src_syscode <> 0
+      and substr(clazz.code,1,2)<>'12' and h.src_syscode = '3'--来源于销售系统
+      and substr(saleout_b.dbizdate,1,10) >= '2017-06-01'
+      and orgs.name = '保龄宝生物股份有限公司本部'
+      and b.dr=0)
+ and substr(h.dbilldate, 1, 10)>='${sdate}' and substr(h.dbilldate, 1, 10)<='${edate}'
+]]></Query>
+</TableData>
+</TableDataMap>
+<ReportWebAttr>
+<ServerPrinter/>
+<WebViewContent>
+<ToolBars>
+<ToolBarManager>
+<Location>
+<Embed position="1"/>
+</Location>
+<ToolBar>
+<Widget class="com.fr.report.web.button.PageSetup">
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('PageSetup-Page_Setup')}]]></Text>
+<IconName>
+<![CDATA[pagesetup]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.PrintPreview">
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('PrintP-Print_Preview')}]]></Text>
+<IconName>
+<![CDATA[preview]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.FlashPrint">
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Utils-Print[Client]A')}]]></Text>
+<IconName>
+<![CDATA[flashprint]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.Print">
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Print')}]]></Text>
+<IconName>
+<![CDATA[print]]></IconName>
+<PrintButtons/>
+</Widget>
+<Widget class="com.fr.report.web.button.Export">
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Export')}]]></Text>
+<IconName>
+<![CDATA[export]]></IconName>
+<Buttons pdf="true" excelP="true" excelO="true" excelS="true" word="true" image="true" html="true"/>
+</Widget>
+<Widget class="com.fr.report.web.button.Email">
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Email')}]]></Text>
+<IconName>
+<![CDATA[email]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.ExcelO">
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Export-Excel-Simple')}]]></Text>
+<IconName>
+<![CDATA[excel]]></IconName>
+</Widget>
+</ToolBar>
+</ToolBarManager>
+</ToolBars>
+<SortFuncCheck check="true"/>
+<ConditionFuncCheck check="true"/>
+<ListFuncCheck check="true"/>
+</WebViewContent>
+<WebWriteContent>
+<ToolBars>
+<ToolBarManager>
+<Location>
+<Embed position="1"/>
+</Location>
+<ToolBar>
+<Widget class="com.fr.report.web.button.write.Submit">
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Utils-Submit')}]]></Text>
+<IconName>
+<![CDATA[submit]]></IconName>
+<Verify failVerifySubmit="false" value="true"/>
+<Sheet onlySubmitSelect="false"/>
+</Widget>
+<Widget class="com.fr.report.web.button.write.Verify">
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Verify-Data_Verify')}]]></Text>
+<IconName>
+<![CDATA[verify]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.FlashPrint">
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Utils-Print[Client]A')}]]></Text>
+<IconName>
+<![CDATA[flashprint]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.Print">
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Print')}]]></Text>
+<IconName>
+<![CDATA[print]]></IconName>
+<PrintButtons/>
+</Widget>
+<Widget class="com.fr.report.web.button.Export">
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Export')}]]></Text>
+<IconName>
+<![CDATA[export]]></IconName>
+<Buttons pdf="true" excelP="true" excelO="true" excelS="true" word="true" image="true" html="true"/>
+</Widget>
+<Widget class="com.fr.report.web.button.Email">
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Email')}]]></Text>
+<IconName>
+<![CDATA[email]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.write.AppendColumnRow">
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Add')}${i18n('Record')}]]></Text>
+<IconName>
+<![CDATA[appendcolumn]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.write.ShowCellValue">
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue/>
+<LabelAttr verticalcenter="true" textalign="0" autoline="false"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</Widget>
+<Widget class="com.fr.report.web.button.ExcelO">
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Export-Excel-Simple')}]]></Text>
+<IconName>
+<![CDATA[excel]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.write.ImportExcelData">
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Utils-Import_Excel_Data')}]]></Text>
+<IconName>
+<![CDATA[excel]]></IconName>
+</Widget>
+</ToolBar>
+</ToolBarManager>
+</ToolBars>
+<SelectedColor/>
+<WebWrite SheetPosition="3"/>
+<RptLocation isShowAtLeft="true"/>
+<UnloadCheck/>
+<ShowWidgets/>
+<OtherAttr isAutoStash="false"/>
+</WebWriteContent>
+</ReportWebAttr>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR/>
+<FR/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[723900,1714500,723900,723900,723900,723900,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[5524500,6591300,2743200,2743200,5829300,2628900,2743200,3886200,2743200,6629400,2743200,11391900,2743200,5562600,2743200,2781300,5867400,3124200,2743200,2743200,2743200,2743200,2743200,3314700,2286000,2171700,2743200,2743200,3238500,2743200,2209800,2743200,2743200,2743200,2247900,3581400,3124200,2743200,2743200,2743200,3048000,2743200,2743200,3048000,2743200,2743200,2743200,2743200,2743200,2743200,3124200,3124200,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="1" s="0">
+<O>
+<![CDATA[核销明细主键]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="1" s="0">
+<O>
+<![CDATA[出库单主键]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="1" s="1">
+<O>
+<![CDATA[处理日期]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="1" s="0">
+<O>
+<![CDATA[应收单号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="1" s="0">
+<O>
+<![CDATA[成本域]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="1" s="0">
+<O>
+<![CDATA[是否OEM]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="1" s="0">
+<O>
+<![CDATA[结算方式]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="1" s="0">
+<O>
+<![CDATA[销售组织]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="1" s="0">
+<O>
+<![CDATA[销售部门]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="1" s="0">
+<O>
+<![CDATA[客户基本分类]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="1" s="0">
+<O>
+<![CDATA[客户编码]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="1" s="0">
+<O>
+<![CDATA[客户名称]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="1" s="0">
+<O>
+<![CDATA[物料编码]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="13" r="1" s="0">
+<O>
+<![CDATA[物料名称]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="14" r="1" s="0">
+<O>
+<![CDATA[规格型号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="1" s="0">
+<O>
+<![CDATA[产品类型]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="16" r="1" s="0">
+<O>
+<![CDATA[产品名称]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="17" r="1" s="0">
+<O>
+<![CDATA[不予免征税率]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="18" r="1" s="0">
+<O>
+<![CDATA[包装成本]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="19" r="1" s="0">
+<O>
+<![CDATA[托盘成本]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="20" r="1" s="0">
+<O>
+<![CDATA[单据数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="21" r="1" s="0">
+<O>
+<![CDATA[单据金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="22" r="1" s="2">
+<O>
+<![CDATA[处理数量/吨]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="23" r="1" s="2">
+<O>
+<![CDATA[处理本币金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="24" r="1" s="0">
+<O>
+<![CDATA[直接运费金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="25" r="1" s="2">
+<O>
+<![CDATA[直接运费分配金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="26" r="1" s="0">
+<O>
+<![CDATA[是否售桶]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="27" r="1" s="0">
+<O>
+<![CDATA[周转桶业务处理数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="28" r="1" s="0">
+<O>
+<![CDATA[按客户汇总回桶运费金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="29" r="1" s="0">
+<O>
+<![CDATA[按客户汇总处理数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="30" r="1" s="2">
+<O>
+<![CDATA[客户分摊回桶运费]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="31" r="1" s="0">
+<O>
+<![CDATA[分配到客户运费总金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="32" r="1" s="0">
+<O>
+<![CDATA[无核销客户回桶运费]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="33" r="1" s="0">
+<O>
+<![CDATA[汇总处理数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="34" r="1" s="2">
+<O>
+<![CDATA[部门分摊回桶运费]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="35" r="1" s="0">
+<O>
+<![CDATA[办事处核销数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="36" r="1" s="0">
+<O>
+<![CDATA[调拨运费汇总]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="37" r="1" s="2">
+<O>
+<![CDATA[办事处调拨运费分摊]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="38" r="1" s="0">
+<O>
+<![CDATA[分摊到客户退货运费]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="39" r="1" s="0">
+<O>
+<![CDATA[按客户汇总处理数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="40" r="1" s="2">
+<O>
+<![CDATA[退货运费分摊到客户]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="41" r="1" s="0">
+<O>
+<![CDATA[分摊到部门退货运费]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="42" r="1" s="0">
+<O>
+<![CDATA[按部门汇总处理数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="43" r="1" s="2">
+<O>
+<![CDATA[退货运费分摊到部门]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="44" r="1" s="0">
+<O>
+<![CDATA[运费汇总]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="45" r="1" s="0">
+<O>
+<![CDATA[采购单价/吨]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="46" r="1" s="2">
+<O>
+<![CDATA[采购金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="47" r="1" s="0">
+<O>
+<![CDATA[海运费]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="48" r="1" s="0">
+<O>
+<![CDATA[汇率]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="49" r="1" s="2">
+<O>
+<![CDATA[海运费金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="50" r="1" s="0">
+<O>
+<![CDATA[港杂空运单价]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="51" r="1" s="2">
+<O>
+<![CDATA[港杂空运金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="52" r="1" s="0">
+<O>
+<![CDATA[差额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1核销数据" columnName="核销明细表主键"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1核销数据" columnName="出库单主键"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1核销数据" columnName="处理日期"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1核销数据" columnName="应收单号"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1核销数据" columnName="成本域"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1核销数据" columnName="是否OEM"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1核销数据" columnName="结算方式"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1核销数据" columnName="销售组织"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1核销数据" columnName="销售部门"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="9" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1核销数据" columnName="客户基本分类"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="10" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1核销数据" columnName="客户编码"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="11" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1核销数据" columnName="客户名称"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="12" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1核销数据" columnName="物料编码"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="13" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1核销数据" columnName="物料名称"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="14" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1核销数据" columnName="规格型号"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="15" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1核销数据" columnName="产品类型"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="16" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1核销数据" columnName="产品名称"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="17" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1核销数据" columnName="不予免征税率"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="18" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1核销数据" columnName="包装成本"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="19" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1核销数据" columnName="托盘成本"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="20" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1核销数据" columnName="借方数量"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="21" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1核销数据" columnName="借方本币金额"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="22" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds1核销数据" columnName="借方处理数量"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="23" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1核销数据" columnName="借方处理本币金额"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="24" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds2直接运费" columnName="FTYFJE"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[ZJ]]></CNAME>
+<Compare op="0">
+<ColumnRow column="1" row="2"/>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="25" r="2" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=ROUND(Y3 * W3 / U3, 4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="26" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1核销数据" columnName="是否售桶"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="27" r="2" s="1">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=if(AA3 = "周转桶", W3, 0)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="28" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds3_1当期有核销的客户的回桶运费" columnName="HZYFJE"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[CODE]]></CNAME>
+<Compare op="0">
+<ColumnRow column="10" row="2"/>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="29" r="2" s="1">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(AB3[!0;!0]A{K3 = $K3})]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="30" r="2" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=if(AD3 = 0, 0, ROUND(AC3 * W3 / AD3, 4))]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="31" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds3_1当期有核销的客户的回桶运费" columnName="TOTAL_YF"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="32" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds3_2当期无核销的客户的回桶运费" columnName="TOTAL_YF"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="33" r="2" s="1">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(AB3[!0;!0]A)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="34" r="2" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=ROUND(AG3 * AB3 / AH3, 4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="35" r="2" s="1">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(W3[!0;!0]A{J3 = $J3})]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="36" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds4调拨运费" columnName="运费金额"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[销售部门]]></CNAME>
+<Compare op="0">
+<ColumnRow column="9" row="2"/>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="37" r="2" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=ROUND(AK3 * W3 / AJ3, 4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="38" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds5_1分摊到客户的退货运费" columnName="HZYFJE"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[CODE]]></CNAME>
+<Compare op="0">
+<ColumnRow column="10" row="2"/>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="39" r="2" s="1">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(W3[!0;!0]A{K3 = $K3})]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="40" r="2" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=ROUND(AM3 * W3 / AN3, 4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="41" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds5_2分摊到部门的退货运费" columnName="HZYFJE"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[部门]]></CNAME>
+<Compare op="0">
+<ColumnRow column="8" row="2"/>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="42" r="2" s="1">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(W3[!0;!0]A{I3 = $I3})]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="43" r="2" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=ROUND(AP3 * W3 / AQ3, 4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="44" r="2" s="1">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=Z3+AE3+AI3+AL3+AO3+AR3]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="45" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1核销数据" columnName="主本币含税采购单价"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="46" r="2" s="2">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=AT3 * W3 * 0.8547]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="47" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1核销数据" columnName="海运费原币金额"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="48" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1核销数据" columnName="汇率"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="49" r="2" s="2">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=ROUND(AV3 * AW3 * W3 / U3, 6)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="50" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1核销数据" columnName="港杂空运本币吨运费"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="51" r="2" s="2">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=AY3 * W3]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="52" r="2" s="1">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=ROUND(X3 - Z3 - AE3 - AI3 - AL3 - AO3 - AR3 - X3 * R3 - S3 * W3 - T3 * W3 - AU3 - AX3 - AZ3, 4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting orientation="1">
+<PaperSize width="46368000" height="64080000"/>
+<Margin top="986400" left="2743200" bottom="986400" right="2743200"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+<ParameterUI class="com.fr.form.main.parameter.FormParameterUI">
+<Parameters/>
+<Layout class="com.fr.form.ui.container.WParameterLayout">
+<WidgetName name="para"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Margin top="0" left="0" bottom="0" right="0"/>
+<Border>
+<border style="0" color="-723724" borderRadius="0" type="0" borderStyle="0"/>
+<WidgetTitle>
+<O>
+<![CDATA[新建标题]]></O>
+<FRFont name="SimSun" style="0" size="72"/>
+<Position pos="0"/>
+</WidgetTitle>
+<Alpha alpha="1.0"/>
+</Border>
+<Background name="ColorBackground" color="-1118482"/>
+<LCAttr vgap="0" hgap="0" compInterval="0"/>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.parameter.FormSubmitButton">
+<WidgetName name="Search"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[查询]]></Text>
+<Hotkeys>
+<![CDATA[enter]]></Hotkeys>
+</InnerWidget>
+<BoundsAttr x="560" y="25" width="80" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="Labeledate"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[计算截止日期:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="0" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="310" y="25" width="80" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.DateEditor">
+<WidgetName name="edate"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<DateAttr/>
+<widgetValue>
+<O t="Date">
+<![CDATA[1498752000000]]></O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="390" y="25" width="96" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="Labelsdate"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[计算开始时间:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="0" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="50" y="25" width="80" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.DateEditor">
+<WidgetName name="sdate"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<DateAttr/>
+<widgetValue>
+<O t="Date">
+<![CDATA[1496246400000]]></O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="130" y="25" width="107" height="21"/>
+</Widget>
+<Sorted sorted="false"/>
+<MobileWidgetList>
+<Widget widgetName="sdate"/>
+<Widget widgetName="edate"/>
+</MobileWidgetList>
+<Display display="true"/>
+<DelayDisplayContent delay="true"/>
+<Position position="0"/>
+<Design_Width design_width="960"/>
+<NameTagModified/>
+<WidgetNameTagMap>
+<NameTag name="sdate" tag="计算开始时间:"/>
+<NameTag name="edate" tag="计算截止日期:"/>
+</WidgetNameTagMap>
+</Layout>
+<DesignAttr width="960" height="80"/>
+</ParameterUI>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72" foreground="-16776961"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0.0000]]></Format>
+<FRFont name="SimSun" style="0" size="72" foreground="-16776961"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72" foreground="-16776961"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="1"/>
+<TemplateID/>
+</WorkBook>
