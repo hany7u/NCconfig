@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20151125" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="ds1 销售收入" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="截至日期"/>
+<O>
+<![CDATA[2017-07-01]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="开始日期"/>
+<O>
+<![CDATA[2017-07-31]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ecomtest]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select ic_saleout_b.cgeneralbid 销售出库单表体ID,
+       so_saleorder.vbillcode 销售订单号,
+       h.vbillcode 发票号,emp.name 业务员,orgs_stock.name 库存组织,stordoc.name 仓库,m.code 物料编码,m.name 物料名称,m.materialspec 规格型号,b.nmny 销售收入 
+from so_saleinvoice_b b
+left join so_saleinvoice h on b.csaleinvoiceid = h.csaleinvoiceid
+left join org_orgs orgs_fi on h.pk_org = orgs_fi.pk_org
+left join bd_psndoc emp on b.cemployeeid = emp.pk_psndoc
+left join bd_material m on b.cmaterialid = m.pk_material
+left join bd_marbasclass mclass on m.pk_marbasclass = mclass.pk_marbasclass
+left join org_orgs orgs_stock on b.csendstockorgid = orgs_stock.pk_org
+left join bd_stordoc stordoc on b.csendstordocid = stordoc.pk_stordoc
+left join so_saleorder_b so_saleorder_b on b.cfirstbid = so_saleorder_b.csaleorderbid
+left join so_saleorder so_saleorder on so_saleorder_b.csaleorderid = so_saleorder.csaleorderid
+left join ic_saleout_b ic_saleout_b on b.csrcbid = ic_saleout_b.cgeneralbid --销售出库单子表
+left join ic_saleout_h ic_saleout_h on ic_saleout_b.cgeneralhid = ic_saleout_h.cgeneralhid --销售出库单表头
+left join so_delivery_b so_delivery_b on ic_saleout_b.csourcebillbid = so_delivery_b.cdeliverybid --发货单表体
+where orgs_fi.name = '禹城保立康生物饲料有限公司本部' and h.dr = 0 and b.dr = 0 and ( mclass.code = '21003' or mclass.code = '21004')
+      and substr(h.dbilldate,1,10) >= '${开始日期}' and substr(h.dbilldate,1,10) >= '${截至日期}']]></Query>
+</TableData>
+<TableData name="ds2销售成本计算" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="edate"/>
+<O>
+<![CDATA[2017-07]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ecomtest]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select * from fr_blk_profit t where t.imonth=substr('${edate}',1,7)]]></Query>
+</TableData>
+</TableDataMap>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR/>
+<FR/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[2743200,3962400,5943600,5219700,4838700,2743200,2743200,2743200,2743200,2743200,2743200,2743200,2743200,2743200,2743200,2743200,2743200,2743200,2743200,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="1" r="5" s="0">
+<O t="DSColumn">
+<Attributes dsName="ds1 销售收入" columnName="物料编码"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="5" s="0">
+<O t="DSColumn">
+<Attributes dsName="ds1 销售收入" columnName="物料名称"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="5" s="0">
+<O t="DSColumn">
+<Attributes dsName="ds2销售成本计算" columnName="PRODCODE"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNAME>
+<![CDATA[PRODCODE]]></CNAME>
+<Compare op="0">
+<ColumnRow column="1" row="5"/>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="5" s="0">
+<O t="DSColumn">
+<Attributes dsName="ds2销售成本计算" columnName="PRODNAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting/>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="2"/>
+<TemplateID TemplateID="a6df9a7d-2a18-4dfc-9322-1ee74df1cf1d"/>
+</WorkBook>
