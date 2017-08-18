@@ -4,4 +4,6 @@
 
 表体自定义项17 主本币含税采购单价 ；
 
+表体收货地址显示公式：cvs( bd_address, detailinfo, pk_address,creceiveaddrid_ID )
+
 
