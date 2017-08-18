@@ -4780,7 +4780,7 @@
 <property name="cardflag" value="true" />
 <property name="datatype" value="-1" />
 <property name="editflag" value="true" />
-<property name="editformula" value="H.vdef11->formataddress(creceiveaddrid_ID)" />
+<property name="editformula" value="H.vdef11->cvs( bd_address, detailinfo, pk_address,creceiveaddrid_ID )" />
 <property name="foreground" value="-1" />
 <property name="hyperlinkflag" value="false" />
 <property name="inputlength" value="-1" />
@@ -4815,7 +4815,7 @@
 <property name="userflag" value="true" />
 <property name="userreviseflag" value="false" />
 <property name="usershowflag" value="true" />
-<property name="validateformula" value="H.vdef11->formataddress(creceiveaddrid_ID)" />
+<property name="validateformula" value="H.vdef11->cvs( bd_address, detailinfo, pk_address,creceiveaddrid_ID )" />
 <property name="width" value="100" />
 </bean>
 <bean class="nc.pubapp.pade.templet.vo.BillTempletBody">
@@ -11242,7 +11242,7 @@
 <property name="metadataclass" value="so.so_saleorder" />
 <property name="modulecode" value="SO" />
 <property name="nodecode" value="40060301" />
-<property name="options" value="&lt;root>&#xa;&lt;tab position=&quot;1&quot; pk_billtemplet_t=&quot;1001B1100000000IO2PU&quot; metadatapath=&quot;so_saleorder_b&quot; pk_billtemplet=&quot;1001B3100000000IFOGC&quot; pos=&quot;1&quot; metadataclass=&quot;so.so_saleorder_b&quot;/>&#xa;&lt;tab position=&quot;0&quot; pk_billtemplet_t=&quot;1001B1100000000IO2PV&quot; metadatapath=&quot;so_saleorder&quot; pk_billtemplet=&quot;1001B3100000000IFOGC&quot; pos=&quot;0&quot; metadataclass=&quot;so.so_saleorder&quot;/>&#xa;&lt;tab position=&quot;2&quot; pk_billtemplet_t=&quot;1001B1100000000IO2PW&quot; pk_billtemplet=&quot;1001B3100000000IFOGC&quot; pos=&quot;2&quot; metadataclass=&quot;so.so_saleorder&quot; mixindex=&quot;1&quot;/>&#xa;&lt;tab position=&quot;1&quot; pk_billtemplet_t=&quot;1001B1100000000IO2PX&quot; metadatapath=&quot;so_saleorder_b&quot; pk_billtemplet=&quot;1001B3100000000IFOGC&quot; pos=&quot;1&quot; metadataclass=&quot;so.so_saleorder_b&quot; basetab=&quot;bodytable1&quot;/>&#xa;&lt;tab position=&quot;2&quot; pk_billtemplet_t=&quot;1001B1100000000IO2PY&quot; pk_billtemplet=&quot;1001B3100000000IFOGC&quot; pos=&quot;2&quot; metadataclass=&quot;so.so_saleorder&quot; basetab=&quot;saleordertail1&quot; mixindex=&quot;2&quot;/>&#xa;&lt;tab position=&quot;1&quot; pk_billtemplet_t=&quot;1001B1100000000IO2PZ&quot; metadatapath=&quot;so_saleorder_b&quot; pk_billtemplet=&quot;1001B3100000000IFOGC&quot; pos=&quot;1&quot; metadataclass=&quot;so.so_saleorder_b&quot; basetab=&quot;bodytable1&quot;/>&#xa;&lt;tab position=&quot;1&quot; pk_billtemplet_t=&quot;1001B1100000000IO2Q0&quot; metadatapath=&quot;so_saleorder_b&quot; pk_billtemplet=&quot;1001B3100000000IFOGC&quot; pos=&quot;1&quot; metadataclass=&quot;so.so_saleorder_b&quot; basetab=&quot;bodytable1&quot;/>&#xa;&#xa;&lt;/root>" />
+<property name="options" value="&lt;root>&#xa;&lt;tab position=&quot;1&quot; pk_billtemplet_t=&quot;1001B1100000000IO2Q1&quot; metadatapath=&quot;so_saleorder_b&quot; pk_billtemplet=&quot;1001B3100000000IFOGC&quot; pos=&quot;1&quot; metadataclass=&quot;so.so_saleorder_b&quot;/>&#xa;&lt;tab position=&quot;0&quot; pk_billtemplet_t=&quot;1001B1100000000IO2Q2&quot; metadatapath=&quot;so_saleorder&quot; pk_billtemplet=&quot;1001B3100000000IFOGC&quot; pos=&quot;0&quot; metadataclass=&quot;so.so_saleorder&quot;/>&#xa;&lt;tab position=&quot;2&quot; pk_billtemplet_t=&quot;1001B1100000000IO2Q3&quot; pk_billtemplet=&quot;1001B3100000000IFOGC&quot; pos=&quot;2&quot; metadataclass=&quot;so.so_saleorder&quot; mixindex=&quot;1&quot;/>&#xa;&lt;tab position=&quot;1&quot; pk_billtemplet_t=&quot;1001B1100000000IO2Q4&quot; metadatapath=&quot;so_saleorder_b&quot; pk_billtemplet=&quot;1001B3100000000IFOGC&quot; pos=&quot;1&quot; metadataclass=&quot;so.so_saleorder_b&quot; basetab=&quot;bodytable1&quot;/>&#xa;&lt;tab position=&quot;2&quot; pk_billtemplet_t=&quot;1001B1100000000IO2Q5&quot; pk_billtemplet=&quot;1001B3100000000IFOGC&quot; pos=&quot;2&quot; metadataclass=&quot;so.so_saleorder&quot; basetab=&quot;saleordertail1&quot; mixindex=&quot;2&quot;/>&#xa;&lt;tab position=&quot;1&quot; pk_billtemplet_t=&quot;1001B1100000000IO2Q6&quot; metadatapath=&quot;so_saleorder_b&quot; pk_billtemplet=&quot;1001B3100000000IFOGC&quot; pos=&quot;1&quot; metadataclass=&quot;so.so_saleorder_b&quot; basetab=&quot;bodytable1&quot;/>&#xa;&lt;tab position=&quot;1&quot; pk_billtemplet_t=&quot;1001B1100000000IO2Q7&quot; metadatapath=&quot;so_saleorder_b&quot; pk_billtemplet=&quot;1001B3100000000IFOGC&quot; pos=&quot;1&quot; metadataclass=&quot;so.so_saleorder_b&quot; basetab=&quot;bodytable1&quot;/>&#xa;&#xa;&lt;/root>" />
 <property name="pkBillTypeCode" value="30" />
 <property name="pkBilltempletHead" value="1001B3100000000IFOGC" />
 <property name="pkcorp" value="0001A910000000000DPS" />
@@ -11256,7 +11256,7 @@
 <property name="metadataclass" value="so.so_saleorder_b" />
 <property name="metadatapath" value="so_saleorder_b" />
 <property name="pk_billtemplet" value="1001B3100000000IFOGC" />
-<property name="pk_billtemplet_t" value="1001B1100000000IO2PU" />
+<property name="pk_billtemplet_t" value="1001B1100000000IO2Q1" />
 <property name="pos" value="1" />
 <property name="position" value="1" />
 <property name="tabcode" value="bodytable1" />
@@ -11267,7 +11267,7 @@
 <property name="metadataclass" value="so.so_saleorder" />
 <property name="metadatapath" value="so_saleorder" />
 <property name="pk_billtemplet" value="1001B3100000000IFOGC" />
-<property name="pk_billtemplet_t" value="1001B1100000000IO2PV" />
+<property name="pk_billtemplet_t" value="1001B1100000000IO2Q2" />
 <property name="pos" value="0" />
 <property name="position" value="0" />
 <property name="tabcode" value="head" />
@@ -11278,7 +11278,7 @@
 <property name="metadataclass" value="so.so_saleorder" />
 <property name="mixindex" value="1" />
 <property name="pk_billtemplet" value="1001B3100000000IFOGC" />
-<property name="pk_billtemplet_t" value="1001B1100000000IO2PW" />
+<property name="pk_billtemplet_t" value="1001B1100000000IO2Q3" />
 <property name="pos" value="2" />
 <property name="position" value="2" />
 <property name="tabcode" value="saleordertail1" />
@@ -11290,7 +11290,7 @@
 <property name="metadataclass" value="so.so_saleorder_b" />
 <property name="metadatapath" value="so_saleorder_b" />
 <property name="pk_billtemplet" value="1001B3100000000IFOGC" />
-<property name="pk_billtemplet_t" value="1001B1100000000IO2PX" />
+<property name="pk_billtemplet_t" value="1001B1100000000IO2Q4" />
 <property name="pos" value="1" />
 <property name="position" value="1" />
 <property name="tabcode" value="bodytable2" />
@@ -11302,7 +11302,7 @@
 <property name="metadataclass" value="so.so_saleorder" />
 <property name="mixindex" value="2" />
 <property name="pk_billtemplet" value="1001B3100000000IFOGC" />
-<property name="pk_billtemplet_t" value="1001B1100000000IO2PY" />
+<property name="pk_billtemplet_t" value="1001B1100000000IO2Q5" />
 <property name="pos" value="2" />
 <property name="position" value="2" />
 <property name="tabcode" value="saleordertail2" />
@@ -11314,7 +11314,7 @@
 <property name="metadataclass" value="so.so_saleorder_b" />
 <property name="metadatapath" value="so_saleorder_b" />
 <property name="pk_billtemplet" value="1001B3100000000IFOGC" />
-<property name="pk_billtemplet_t" value="1001B1100000000IO2PZ" />
+<property name="pk_billtemplet_t" value="1001B1100000000IO2Q6" />
 <property name="pos" value="1" />
 <property name="position" value="1" />
 <property name="tabcode" value="bodytable3" />
@@ -11326,7 +11326,7 @@
 <property name="metadataclass" value="so.so_saleorder_b" />
 <property name="metadatapath" value="so_saleorder_b" />
 <property name="pk_billtemplet" value="1001B3100000000IFOGC" />
-<property name="pk_billtemplet_t" value="1001B1100000000IO2Q0" />
+<property name="pk_billtemplet_t" value="1001B1100000000IO2Q7" />
 <property name="pos" value="1" />
 <property name="position" value="1" />
 <property name="tabcode" value="bodytable4" />
@@ -11338,7 +11338,7 @@
 </bean>
 </property>
 
-<property name="ts" value="2017-08-18 16:15:15" />
+<property name="ts" value="2017-08-18 16:24:40" />
 </bean>
 </property>
 
